@@ -1,0 +1,32 @@
+<p class="notice"><%= notice %></p>
+
+<h1>Notices</h1>
+
+<p>
+  <%= link_to "New notice", new_notice_path %>
+</p>
+
+<% if @notices.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Body</th>
+        <th colspan="3">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @notices.each do |notice| %>
+        <tr>
+          <td><%= notice.title %></td>
+          <td><%= truncate(notice.body, length: 80) %></td>
+          <td><%= link_to "Show", notice %></td>
+          <td><%= link_to "Edit", edit_notice_path(notice) %></td>
+          <td><%= button_to "Destroy", notice, method: :delete, form: { data: { turbo_confirm: "Are you sure?" } } %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No notices yet.</p>
+<% end %>
