@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+# レビューコメントと要約を日本語で出力する。
+language: "ja-JP"
+
+reviews:
+  # 重要な不具合やセキュリティ上の問題を中心に、ノイズを抑えてレビューする。
+  profile: "chill"
+  high_level_summary: true
+  poem: false
+  review_status: true
+
+  auto_review:
+    enabled: true
+    # 作業途中のドラフトPRはレビュー対象外とする。
+    drafts: false
+
+  tools:
+    # Rubyを含むコードの構造的な問題と基本的なセキュリティ問題を検出する。
+    ast-grep:
+      essential_rules: true
+    # Rails固有のセキュリティ脆弱性を検出する。
+    brakeman:
+      enabled: true
+    # Rubyの静的解析を実行する。設定ファイル未導入のためchillプロファイルを使用する。
+    rubocop:
+      enabled: true
+
+  # 自動生成物、依存関係の固定ファイル、暗号化済み資格情報はレビューから除外する。
+  path_filters:
+    - "!Gemfile.lock"
+    - "!db/schema.rb"
+    - "!config/credentials.yml.enc"
+    - "!public/assets/**"
+    - "!storage/**"
+    - "!tmp/**"
+    - "!log/**"
+
+  path_instructions:
+    - path: "app/controllers/**/*.rb"
+      instructions: |
+        - 認証・認可、Strong Parameters、入力値検証が適切か確認してください。
+        - N+1クエリ、意図しない情報公開、例外処理の不足を指摘してください。
+        - 変更された振る舞いを検証するリクエストスペックがあるか確認してください。
+    - path: "app/models/**/*.rb"
+      instructions: |
+        - バリデーション、関連、コールバック、トランザクションの整合性を確認してください。
+        - データ不整合やN+1クエリにつながる実装を指摘してください。
+        - 変更された振る舞いを検証するモデルスペックがあるか確認してください。
+    - path: "db/migrate/**/*.rb"
+      instructions: |
+        - 既存データを考慮した安全な移行か、ロールバック可能か確認してください。
+        - NOT NULL制約、デフォルト値、インデックス、外部キーが要件に合うか確認してください。
+        - 大きなテーブルで長時間ロックや全件更新を起こす可能性を指摘してください。
+    - path: "app/views/**/*.erb"
+      instructions: |
+        - XSS、CSRF、未エスケープ出力、不適切なフォーム送信がないか確認してください。
+        - ラベル、操作要素、エラー表示など基本的なアクセシビリティを確認してください。
+    - path: "{spec,test}/**/*"
+      instructions: |
+        - 正常系だけでなく、異常系、境界値、権限に関するケースを確認してください。
+        - 実装詳細に過度に依存せず、利用者から見た振る舞いを検証しているか確認してください。
+        - 不安定なテストやテスト間の状態共有を指摘してください。
+
+chat:
+  # PRコメント内のCodeRabbitへの質問に自動応答する。
+  auto_reply: true
